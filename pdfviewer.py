@@ -2,18 +2,18 @@ import sys
 import json
 import os
 import fitz  # PyMuPDF
-from PyQt5.QtWidgets import (
-    QApplication, QLabel, QScrollArea, QMainWindow, QFileDialog, QToolBar, QAction
+from PySide6.QtWidgets import (
+    QApplication, QLabel, QScrollArea, QMainWindow, QFileDialog, QToolBar
 )
-from PyQt5.QtGui import QPixmap, QImage, QPainter, QPen, QIcon
-from PyQt5.QtCore import Qt, QTimer
+from PySide6.QtGui import QPixmap, QImage, QPainter, QPen, QIcon, QAction
+from PySide6.QtCore import Qt, QTimer
 
 
 class PDFViewer(QMainWindow):
     def __init__(self, pdf_path):
         super().__init__()
         self.setWindowTitle(f"Smooth PDF Viewer – {os.path.basename(pdf_path)}")
-        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setFocus()
 
         # store PDF info
@@ -37,7 +37,7 @@ class PDFViewer(QMainWindow):
         # UI elements
         self.label = ClickableLabel(self)
         self.label.setPixmap(QPixmap.fromImage(self.image))
-        self.label.setFocusPolicy(Qt.StrongFocus)
+        self.label.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidget(self.label)
@@ -82,15 +82,15 @@ class PDFViewer(QMainWindow):
 
         for page in doc:
             pix = page.get_pixmap(matrix=mat)
-            img = QImage(pix.samples, pix.width, pix.height, pix.stride, QImage.Format_RGB888)
+            img = QImage(pix.samples, pix.width, pix.height, pix.stride, QImage.Format.Format_RGB888)
             images.append(img.copy())
             widths.append(pix.width)
             heights.append(pix.height)
 
         total_height = sum(heights)
         total_width = max(widths)
-        long_image = QImage(total_width, total_height, QImage.Format_RGB888)
-        long_image.fill(Qt.white)
+        long_image = QImage(total_width, total_height, QImage.Format.Format_RGB888)
+        long_image.fill(Qt.GlobalColor.white)
 
         painter = QPainter(long_image)
         y_offset = 0
@@ -109,15 +109,15 @@ class PDFViewer(QMainWindow):
 
         for page in doc:
             pix = page.get_pixmap(matrix=mat)
-            img = QImage(pix.samples, pix.width, pix.height, pix.stride, QImage.Format_RGB888)
+            img = QImage(pix.samples, pix.width, pix.height, pix.stride, QImage.Format.Format_RGB888)
             images.append(img.copy())
             widths.append(pix.width)
             heights.append(pix.height)
 
         total_height = sum(heights)
         total_width = max(widths)
-        long_image = QImage(total_width, total_height, QImage.Format_RGB888)
-        long_image.fill(Qt.white)
+        long_image = QImage(total_width, total_height, QImage.Format.Format_RGB888)
+        long_image.fill(Qt.GlobalColor.white)
 
         painter = QPainter(long_image)
         y_offset = 0
@@ -182,7 +182,7 @@ class PDFViewer(QMainWindow):
 
         # only draw anchors if not in performance mode
         if not getattr(self, "performance_mode", False):
-            pen = QPen(Qt.red, 3)
+            pen = QPen(Qt.GlobalColor.red, 3)
             painter.setPen(pen)
             for y in self.anchors:
                 painter.drawLine(0, int(y * self.user_scale), pixmap.width(), int(y * self.user_scale))
@@ -233,34 +233,34 @@ class PDFViewer(QMainWindow):
 
         # Performance mode: only ESC works
         if getattr(self, "performance_mode", False):
-            if key == Qt.Key_Escape:
+            if key == Qt.Key.Key_Escape:
                 self.exit_performance_mode()
-            elif key == Qt.Key_Right or key == Qt.Key_PageDown:
+            elif key == Qt.Key.Key_Right or key == Qt.Key.Key_PageDown:
                 self.next_anchor()
-            elif key == Qt.Key_Left or key == Qt.Key_PageUp:
+            elif key == Qt.Key.Key_Left or key == Qt.Key.Key_PageUp:
                 self.prev_anchor()
-            elif key == Qt.Key_Plus or key == Qt.Key_Equal or key == Qt.Key_P:
+            elif key == Qt.Key.Key_Plus or key == Qt.Key.Key_Equal or key == Qt.Key.Key_P:
                 self.zoom_in()
-            elif key == Qt.Key_Minus or key == Qt.Key_M:
+            elif key == Qt.Key.Key_Minus or key == Qt.Key.Key_M:
                 self.zoom_out()
             return
 
         # --- Normal mode controls ---
-        elif key == Qt.Key_S:
+        elif key == Qt.Key.Key_S:
             self.save_anchors()
-        elif key == Qt.Key_Right or key == Qt.Key_PageDown:
+        elif key == Qt.Key.Key_Right or key == Qt.Key.Key_PageDown:
             self.next_anchor()
-        elif key == Qt.Key_Left or key == Qt.Key_PageUp:
+        elif key == Qt.Key.Key_Left or key == Qt.Key.Key_PageUp:
             self.prev_anchor()
-        elif key == Qt.Key_Plus or key == Qt.Key_Equal or key == Qt.Key_P:
+        elif key == Qt.Key.Key_Plus or key == Qt.Key.Key_Equal or key == Qt.Key.Key_P:
             self.zoom_in()
-        elif key == Qt.Key_Minus or key == Qt.Key_M:
+        elif key == Qt.Key.Key_Minus or key == Qt.Key.Key_M:
             self.zoom_out()
-        elif key == Qt.Key_Return or key == Qt.Key_Enter:
+        elif key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
             self.add_anchor_at_view_top()
-        elif key == Qt.Key_F:
+        elif key == Qt.Key.Key_F:
             self.enter_performance_mode()
-        elif key == Qt.Key_Escape:
+        elif key == Qt.Key.Key_Escape:
             sys.exit()
 
 
@@ -387,16 +387,16 @@ class ClickableLabel(QLabel):
     def __init__(self, parent_viewer):
         super().__init__()
         self.parent_viewer = parent_viewer
-        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
     def mousePressEvent(self, event):
         if getattr(self.parent_viewer, "performance_mode", False):
             # Ignore all clicks in performance mode
             return
 
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self.parent_viewer.add_anchor(event.pos().y())
-        elif event.button() == Qt.RightButton:
+        elif event.button() == Qt.MouseButton.RightButton:
             self.parent_viewer.remove_nearest_anchor(event.pos().y())
         self.setFocus()
 
@@ -418,4 +418,4 @@ if __name__ == "__main__":
 
     viewer = PDFViewer(pdf_file)
     viewer.showMaximized()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
